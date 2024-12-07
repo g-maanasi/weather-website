@@ -1,18 +1,13 @@
 from flask import Flask
+from flask_cors import CORS, cross_origin
 import python_weather
 import asyncio
-import os
 
 app = Flask(__name__)
-
-@app.route('/')
-def hello():
-    
-    return 'Hello, World!'
-
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 async def getweather() -> None:
-  # declare the client. the measuring unit used defaults to the metric system (celcius, km/h, etc.)
   async with python_weather.Client(unit=python_weather.IMPERIAL) as client:
     # fetch a weather forecast from a city
     weather = await client.get('New York')
@@ -28,10 +23,12 @@ async def getweather() -> None:
       for hourly in daily:
         print(f' --> {hourly!r}')
 
+@app.route("/")
+@cross_origin()
+def hello_world():
+    asyncio.run(getweather())
+    return {"message":"hello world"}
+
 
 if __name__ == '__main__':
-    if os.name == 'nt':
-        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
-    asyncio.run(getweather())
-    app.run(debug=True) 
+    app.run(debug=True)
