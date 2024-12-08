@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { Autocomplete, Box, TextField } from "@mui/material";
 
 export const WeatherSelection = () => {
-  const [countryList, setCountryList] = useState([{ Name: "United States of America" }]);
+  const [countryList, setCountryList] = useState([
+    { Name: "United States" },
+  ]);
   const [regionList, setRegionList] = useState([{ name: "New York" }]);
   const [cityList, setCityList] = useState([{ name: "New York City" }]);
   const [selectedCountry, setSelectedCountry] = useState("");
@@ -26,8 +28,9 @@ export const WeatherSelection = () => {
       fetch(`http://127.0.0.1:5000/all_country_regions/${value["label"]}`)
         .then((res) => res.json())
         .then((result) => {
-          if (result["regions"].length === 0) {
+          if (!result || (result["regions"].length === 0)) {
             setSelectedRegion(null);
+            getCitiesFromCountry(value['label'])
           } else {
             setSelectedRegion("");
             setRegionList(result["regions"]);
@@ -36,16 +39,26 @@ export const WeatherSelection = () => {
     }
   };
 
+  const getCitiesFromCountry = (country) => {
+    fetch(`http://127.0.0.1:5000/all_country_cities/${country}`)
+      .then((res) => res.json())
+      .then((result) => {
+        setSelectedCity("");
+        setCityList(result["cities"]);
+      });
+  };
+
   const onRegionSelect = (event, value, reason) => {
     if (reason === "selectOption") {
       setSelectedRegion(value);
       console.log("Option selected:", value);
-      const selection = selectedCountry['label'] + "," + value['label'];
+      const selection = selectedCountry["label"] + "," + value["label"];
+
       fetch(`http://127.0.0.1:5000/all_region_cities/${selection}`)
         .then((res) => res.json())
         .then((result) => {
           setSelectedCity("");
-          setCityList(result['cities']);
+          setCityList(result["cities"]);
         });
     }
   };
@@ -79,7 +92,8 @@ export const WeatherSelection = () => {
         />
       )}
 
-      {(selectedRegion !== "" || ((selectedRegion === null) && (selectedCountry !== ""))) && (
+      {(selectedRegion !== "" ||
+        (selectedRegion === null && selectedCountry !== "")) && (
         <Autocomplete
           disablePortal
           options={cityList}

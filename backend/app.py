@@ -39,7 +39,7 @@ def get_all_countries_list():
   if response.status_code == 200:
     data = response.json()
     for country in data['data']:
-      country_list.append({'label': country['name'], 'id': id})
+      country_list.append({'label': country['name'], 'id': country['Iso3']})
       id += 1
     
     return {'countries': country_list}
@@ -48,9 +48,11 @@ def get_all_countries_list():
 
 @app.route("/all_country_regions/<country>", methods=["GET"])
 def get_all_regions_from_country(country: str):
+  if country == 'Gambia':
+    country = 'Gambia The'
+
   payload = {"country": country}
   response = requests.post("https://countriesnow.space/api/v0.1/countries/states", json=payload)
-
   if response.status_code == 200:
     data = response.json()
     region_list = []
@@ -69,13 +71,14 @@ def get_all_regions_from_country(country: str):
 def get_all_cities_from_region(selection: str):
   selection_list = selection.split(",")
   payload = {'country': selection_list[0], 'state': selection_list[1]}
-  print(payload)
   response = requests.post("https://countriesnow.space/api/v0.1/countries/state/cities", json=payload)
+  print(response)
 
   if response.status_code == 200:
     data = response.json()
     city_list = []
     id = 0
+    print(data)
 
     if response.status_code == 200:
       data = response.json()
@@ -85,6 +88,22 @@ def get_all_cities_from_region(selection: str):
     
     return {'cities': city_list}
 
+  return {}
+
+@app.route("/all_country_cities/<country>", methods=["GET"])
+def get_all_cities_from_country(country: str):
+  payload = {'country': country}
+  city_list = []
+  id = 0
+  response = requests.post("https://countriesnow.space/api/v0.1/countries/cities", json=payload)
+  if response.status_code == 200:
+    data = response.json()
+
+    for city in data['data']:
+        city_list.append({'label': city, 'id': id})
+        id += 1
+    
+    return {'cities': city_list}
   return {}
 
 if __name__ == '__main__':
