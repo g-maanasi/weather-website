@@ -1,5 +1,5 @@
 import "./App.css";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Box, Button, Typography } from "@mui/material";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
@@ -7,16 +7,8 @@ import { lightTheme, darkTheme } from "./theme/colorTheme";
 import { WeatherSelection } from "./weather-selection/weatherSelection";
 
 function App() {
-  const [test, setTest] = useState("");
   const [colorMode, setColorMode] = useState(lightTheme);
 
-  useEffect(() => {
-    fetch("http://127.0.0.1:5000")
-      .then((res) => res.json())
-      .then((result) => {
-        setTest(result.message);
-      });
-  }, [setTest]);
 
   const toggleColorMode = () => {
     setColorMode(colorMode === lightTheme ? darkTheme : lightTheme);

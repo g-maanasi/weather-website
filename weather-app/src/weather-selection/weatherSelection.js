@@ -3,10 +3,10 @@ import { Autocomplete, Box, TextField } from "@mui/material";
 
 export const WeatherSelection = () => {
   const [countryList, setCountryList] = useState([
-    { Name: "United States" },
+    { label: "United States" },
   ]);
-  const [regionList, setRegionList] = useState([{ name: "New York" }]);
-  const [cityList, setCityList] = useState([{ name: "New York City" }]);
+  const [regionList, setRegionList] = useState([{ label: "New York" }]);
+  const [cityList, setCityList] = useState([{ label: "New York City" }]);
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedRegion, setSelectedRegion] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
