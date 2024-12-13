@@ -1,3 +1,4 @@
+import './weatherSelection.css'
 import { useEffect, useState } from "react";
 import { Autocomplete, Box, TextField } from "@mui/material";
 
@@ -71,7 +72,7 @@ export const WeatherSelection = () => {
   };
 
   return (
-    <Box>
+    <Box className="selection-container">
       <Autocomplete
         disablePortal
         options={countryList}
