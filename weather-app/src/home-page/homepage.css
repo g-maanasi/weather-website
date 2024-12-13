@@ -37,3 +37,12 @@
     height: 10rem;
     width: 10rem;
 }
+
+.right-container {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    margin-left: auto;
+    align-items: center;
+    gap: 4rem;
+}
