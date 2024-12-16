@@ -1,8 +1,8 @@
 import './weatherSelection.css'
 import { useEffect, useState } from "react";
-import { Autocomplete, Box, TextField } from "@mui/material";
+import { Autocomplete, Box, Button, TextField } from "@mui/material";
 
-export const WeatherSelection = () => {
+export const LocationSelection = () => {
   const [countryList, setCountryList] = useState([
     { label: "United States" },
   ]);
@@ -11,6 +11,7 @@ export const WeatherSelection = () => {
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedRegion, setSelectedRegion] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
+  const [submitAvailable, setSubmitAvailable] = useState(false);
 
   useEffect(() => {
     fetch("http://127.0.0.1:5000/all_countries")
@@ -68,6 +69,7 @@ export const WeatherSelection = () => {
     if (reason === "selectOption") {
       setSelectedCity(value);
       console.log("Option selected:", value);
+      setSubmitAvailable(true);
     }
   };
 
@@ -103,6 +105,10 @@ export const WeatherSelection = () => {
           value={selectedCity}
           renderInput={(params) => <TextField {...params} label="City" />}
         />
+      )}
+
+      {(submitAvailable) && (
+        <Button className="search-button">Search</Button>
       )}
     </Box>
   );

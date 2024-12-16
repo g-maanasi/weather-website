@@ -10,3 +10,9 @@
     background-image: linear-gradient(rgb(102, 176, 233), rgb(237, 237, 237));
     font-family: "DM Sans", sans-serif;
 }
+
+.page-container {
+    width: 60vw;
+    height: 100%;
+    padding: 1rem 3rem;
+}

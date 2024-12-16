@@ -1,6 +1,17 @@
 .selection-container {
     background-color: white;
+    display: flex;
+    position: relative;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
     border-radius: 20px;
-    height: 20rem;
-    width: 15rem;
+    height: 25rem;
+    width: 30rem;
+}
+
+.search-button {
+    position: absolute;
+    margin-top: 1rem;
+    margin-left: auto;
 }

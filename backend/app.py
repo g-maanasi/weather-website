@@ -13,18 +13,19 @@ async def getweather() -> None:
     weather = await client.get('New York')
     
     # returns the current day's forecast temperature (int)
-    #print(weather.temperature)
+    print(weather.temperature)
     
     # get the weather forecast for a few days
-    #for daily in weather:
-      #print(daily)
+    for daily in weather:
+      print(daily)
       
       # hourly forecasts
-      #for hourly in daily:
-        #print(f' --> {hourly!r}')
+      for hourly in daily:
+        print(f' --> {hourly!r}')
 
 @app.route("/")
 def hello_world():
+  asyncio.run(getweather())
   return {"message":"hello world"}
 
 @app.route("/all_countries", methods=["GET"])
