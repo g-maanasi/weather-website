@@ -1,11 +1,9 @@
-import './weatherSelection.css'
+import "./weatherSelection.css";
 import { useEffect, useState } from "react";
 import { Autocomplete, Box, Button, TextField } from "@mui/material";
 
 export const LocationSelection = () => {
-  const [countryList, setCountryList] = useState([
-    { label: "United States" },
-  ]);
+  const [countryList, setCountryList] = useState([{ label: "United States" }]);
   const [regionList, setRegionList] = useState([{ label: "New York" }]);
   const [cityList, setCityList] = useState([{ label: "New York City" }]);
   const [selectedCountry, setSelectedCountry] = useState("");
@@ -30,9 +28,9 @@ export const LocationSelection = () => {
       fetch(`http://127.0.0.1:5000/all_country_regions/${value["label"]}`)
         .then((res) => res.json())
         .then((result) => {
-          if (!result || (result["regions"].length === 0)) {
+          if (!result || result["regions"].length === 0) {
             setSelectedRegion(null);
-            getCitiesFromCountry(value['label'])
+            getCitiesFromCountry(value["label"]);
           } else {
             setSelectedRegion("");
             setRegionList(result["regions"]);
@@ -73,6 +71,32 @@ export const LocationSelection = () => {
     }
   };
 
+  const getWeather = async () => {
+    const weatherInfo = {
+      city: selectedCity.label,
+      region: selectedRegion.label,
+      country: selectedCountry.label,
+    };
+    const url = "http://127.0.0.1:5000/get_weather";
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(weatherInfo),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <Box className="selection-container">
       <Autocomplete
@@ -107,8 +131,10 @@ export const LocationSelection = () => {
         />
       )}
 
-      {(submitAvailable) && (
-        <Button className="search-button">Search</Button>
+      {submitAvailable && (
+        <Button className="search-button" onClick={getWeather}>
+          Search
+        </Button>
       )}
     </Box>
   );

@@ -1,34 +1,18 @@
-from flask import Flask
+from flask import Flask, request
 from flask_cors import CORS, cross_origin
-import python_weather
 import asyncio
 import requests
+from geopy.geocoders import Nominatim
 
 app = Flask(__name__)
-CORS(app)
-
-async def getweather() -> None:
-  async with python_weather.Client(unit=python_weather.IMPERIAL) as client:
-    # fetch a weather forecast from a city
-    weather = await client.get('New York')
-    
-    # returns the current day's forecast temperature (int)
-    print(weather.temperature)
-    
-    # get the weather forecast for a few days
-    for daily in weather:
-      print(daily)
-      
-      # hourly forecasts
-      for hourly in daily:
-        print(f' --> {hourly!r}')
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 
 @app.route("/")
 def hello_world():
-  asyncio.run(getweather())
   return {"message":"hello world"}
 
 @app.route("/all_countries", methods=["GET"])
+@cross_origin(origin='http://localhost:3000')
 def get_all_countries_list():
   url = "https://countriesnow.space/api/v0.1/countries/iso"
   response = requests.request("GET", url, headers={}, data={})
@@ -53,9 +37,9 @@ def get_all_regions_from_country(country: str):
   url = "https://countriesnow.space/api/v0.1/countries/states"
 
   payload = {"country": country}
-  payload = str(payload)
   response = requests.request("POST", url, headers={}, data=payload)
   
+  print(response)
   if response.status_code == 200:
     data = response.json()
     region_list = []
@@ -109,6 +93,36 @@ def get_all_cities_from_country(country: str):
     
     return {'cities': city_list}
   return {}
+
+@app.route("/get_weather", methods=['POST'])
+def get_weather_from_city():
+  weather_data = dict(request.get_json())
+  city = weather_data['city']
+  region = weather_data['region']
+  country = weather_data['country']
+  geolocator = Nominatim(user_agent="MyApp")
+  
+  # Get location details
+  location = geolocator.geocode(f"${city}, ${region}, ${country}")
+
+  if location:
+    print("Latitude:", location.latitude)
+    print("Longitude:", location.longitude)
+    print("Address:", location.address)
+    latitude = round(location.latitude, 4)
+    longitude = round(location.longitude, 4)
+
+    url = f"https://api.tomorrow.io/v4/weather/realtime?location={latitude}%2C%20{longitude}&apikey=a2qFNOmKYZWIkdNsdewmpgi2x7wxjbKS"
+    headers = {"accept": "application/json"}
+    response = requests.get(url, headers=headers)
+
+    print(response.text)
+    return {'weather': 'success'}
+  else:
+    print("Location not found.")
+
+  return {'weather': 'fail'}
+
 
 if __name__ == '__main__':
   app.run(debug=True)
