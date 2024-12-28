@@ -3,9 +3,17 @@ from flask_cors import CORS, cross_origin
 import asyncio
 import requests
 from geopy.geocoders import Nominatim
+import openmeteo_requests
+import requests_cache
+import pandas as pd
+from retry_requests import retry
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+
+cache_session = requests_cache.CachedSession('.cache', expire_after = 3600)
+retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
+openmeteo = openmeteo_requests.Client(session = retry_session)
 
 @app.route("/")
 def hello_world():
@@ -106,17 +114,60 @@ def get_weather_from_city():
   location = geolocator.geocode(f"${city}, ${region}, ${country}")
 
   if location:
-    print("Latitude:", location.latitude)
-    print("Longitude:", location.longitude)
-    print("Address:", location.address)
     latitude = round(location.latitude, 4)
     longitude = round(location.longitude, 4)
 
-    url = f"https://api.tomorrow.io/v4/weather/realtime?location={latitude}%2C%20{longitude}&apikey=a2qFNOmKYZWIkdNsdewmpgi2x7wxjbKS"
-    headers = {"accept": "application/json"}
-    response = requests.get(url, headers=headers)
+    url = "https://api.open-meteo.com/v1/forecast"
+    params = {
+      "latitude": latitude,
+      "longitude": longitude,
+      "hourly": ["temperature_2m", "apparent_temperature", "precipitation_probability", "precipitation", "cloud_cover_low", "cloud_cover_mid", "cloud_cover_high", "wind_speed_10m", "is_day", "sunshine_duration"],
+      "temperature_unit": "fahrenheit",
+      "wind_speed_unit": "ms",
+      "precipitation_unit": "inch",
+      "timezone": "America/Chicago"
+    }
+    responses = openmeteo.weather_api(url, params=params)
+    # Process first location. Add a for-loop for multiple locations or weather models
+    response = responses[0]
+    print(f"Coordinates {response.Latitude()}°N {response.Longitude()}°E")
+    print(f"Elevation {response.Elevation()} m asl")
+    print(f"Timezone {response.Timezone()} {response.TimezoneAbbreviation()}")
+    print(f"Timezone difference to GMT+0 {response.UtcOffsetSeconds()} s")
 
-    print(response.text)
+    # Process hourly data. The order of variables needs to be the same as requested.
+    hourly = response.Hourly()
+    hourly_temperature_2m = hourly.Variables(0).ValuesAsNumpy()
+    hourly_apparent_temperature = hourly.Variables(1).ValuesAsNumpy()
+    hourly_precipitation_probability = hourly.Variables(2).ValuesAsNumpy()
+    hourly_precipitation = hourly.Variables(3).ValuesAsNumpy()
+    hourly_cloud_cover_low = hourly.Variables(4).ValuesAsNumpy()
+    hourly_cloud_cover_mid = hourly.Variables(5).ValuesAsNumpy()
+    hourly_cloud_cover_high = hourly.Variables(6).ValuesAsNumpy()
+    hourly_wind_speed_10m = hourly.Variables(7).ValuesAsNumpy()
+    hourly_is_day = hourly.Variables(8).ValuesAsNumpy()
+    hourly_sunshine_duration = hourly.Variables(9).ValuesAsNumpy()
+
+    hourly_data = {"date": pd.date_range(
+      start = pd.to_datetime(hourly.Time(), unit = "s", utc = True),
+      end = pd.to_datetime(hourly.TimeEnd(), unit = "s", utc = True),
+      freq = pd.Timedelta(seconds = hourly.Interval()),
+      inclusive = "left"
+    )}
+    hourly_data["temperature_2m"] = hourly_temperature_2m
+    hourly_data["apparent_temperature"] = hourly_apparent_temperature
+    hourly_data["precipitation_probability"] = hourly_precipitation_probability
+    hourly_data["precipitation"] = hourly_precipitation
+    hourly_data["cloud_cover_low"] = hourly_cloud_cover_low
+    hourly_data["cloud_cover_mid"] = hourly_cloud_cover_mid
+    hourly_data["cloud_cover_high"] = hourly_cloud_cover_high
+    hourly_data["wind_speed_10m"] = hourly_wind_speed_10m
+    hourly_data["is_day"] = hourly_is_day
+    hourly_data["sunshine_duration"] = hourly_sunshine_duration
+
+    hourly_dataframe = pd.DataFrame(data = hourly_data)
+    print(hourly_dataframe)
+
     return {'weather': 'success'}
   else:
     print("Location not found.")
