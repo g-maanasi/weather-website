@@ -28,7 +28,7 @@ export const NavigationBar = () => {
               fontFamily: "'DM Sans', sans-serif",
             }}
           >
-            National Weather
+            Clime
           </Typography>
         </Box>
 
