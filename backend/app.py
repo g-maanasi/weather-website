@@ -7,6 +7,7 @@ import openmeteo_requests
 import requests_cache
 import pandas as pd
 from retry_requests import retry
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
@@ -105,70 +106,78 @@ def get_all_cities_from_country(country: str):
 @app.route("/get_weather", methods=['POST'])
 def get_weather_from_city():
   weather_data = dict(request.get_json())
-  city = weather_data['city']
-  region = weather_data['region']
-  country = weather_data['country']
   geolocator = Nominatim(user_agent="MyApp")
+  location = ''
   
   # Get location details
-  location = geolocator.geocode(f"${city}, ${region}, ${country}")
+  if 'region' in weather_data:
+    city = weather_data['city']
+    region = weather_data['region']
+    country = weather_data['country']
+    location = geolocator.geocode(f"${city}, ${region}, ${country}")
+  else:
+    city = weather_data['city']
+    country = weather_data['country']
+    location = geolocator.geocode(f"${city}, ${country}")
 
   if location:
     latitude = round(location.latitude, 4)
     longitude = round(location.longitude, 4)
 
+    # Get the current, hourly, and daily data for the specified location from Open Meteo
     url = "https://api.open-meteo.com/v1/forecast"
     params = {
       "latitude": latitude,
       "longitude": longitude,
+      "current": ["temperature_2m", "relative_humidity_2m", "precipitation", "cloud_cover", "wind_speed_10m"],
       "hourly": ["temperature_2m", "apparent_temperature", "precipitation_probability", "precipitation", "cloud_cover_low", "cloud_cover_mid", "cloud_cover_high", "wind_speed_10m", "is_day", "sunshine_duration"],
+      "daily": ["temperature_2m_max", "temperature_2m_min", "apparent_temperature_max", "apparent_temperature_min", "sunrise", "sunset", "daylight_duration", "precipitation_probability_max"],
       "temperature_unit": "fahrenheit",
       "wind_speed_unit": "ms",
       "precipitation_unit": "inch",
       "timezone": "America/Chicago"
     }
-    responses = openmeteo.weather_api(url, params=params)
-    # Process first location. Add a for-loop for multiple locations or weather models
-    response = responses[0]
-    print(f"Coordinates {response.Latitude()}°N {response.Longitude()}°E")
-    print(f"Elevation {response.Elevation()} m asl")
-    print(f"Timezone {response.Timezone()} {response.TimezoneAbbreviation()}")
-    print(f"Timezone difference to GMT+0 {response.UtcOffsetSeconds()} s")
 
-    # Process hourly data. The order of variables needs to be the same as requested.
-    hourly = response.Hourly()
-    hourly_temperature_2m = hourly.Variables(0).ValuesAsNumpy()
-    hourly_apparent_temperature = hourly.Variables(1).ValuesAsNumpy()
-    hourly_precipitation_probability = hourly.Variables(2).ValuesAsNumpy()
-    hourly_precipitation = hourly.Variables(3).ValuesAsNumpy()
-    hourly_cloud_cover_low = hourly.Variables(4).ValuesAsNumpy()
-    hourly_cloud_cover_mid = hourly.Variables(5).ValuesAsNumpy()
-    hourly_cloud_cover_high = hourly.Variables(6).ValuesAsNumpy()
-    hourly_wind_speed_10m = hourly.Variables(7).ValuesAsNumpy()
-    hourly_is_day = hourly.Variables(8).ValuesAsNumpy()
-    hourly_sunshine_duration = hourly.Variables(9).ValuesAsNumpy()
+    response = requests.get(url, params=params)
+    data = response.json()
 
-    hourly_data = {"date": pd.date_range(
-      start = pd.to_datetime(hourly.Time(), unit = "s", utc = True),
-      end = pd.to_datetime(hourly.TimeEnd(), unit = "s", utc = True),
-      freq = pd.Timedelta(seconds = hourly.Interval()),
-      inclusive = "left"
-    )}
-    hourly_data["temperature_2m"] = hourly_temperature_2m
-    hourly_data["apparent_temperature"] = hourly_apparent_temperature
-    hourly_data["precipitation_probability"] = hourly_precipitation_probability
-    hourly_data["precipitation"] = hourly_precipitation
-    hourly_data["cloud_cover_low"] = hourly_cloud_cover_low
-    hourly_data["cloud_cover_mid"] = hourly_cloud_cover_mid
-    hourly_data["cloud_cover_high"] = hourly_cloud_cover_high
-    hourly_data["wind_speed_10m"] = hourly_wind_speed_10m
-    hourly_data["is_day"] = hourly_is_day
-    hourly_data["sunshine_duration"] = hourly_sunshine_duration
+    # Store the current weather data for today
+    current_data = data['current']
 
-    hourly_dataframe = pd.DataFrame(data = hourly_data)
-    print(hourly_dataframe)
+    # Get the time range for the hourly weather data
+    current_time = datetime.now().strftime("%Y-%m-%dT%H:00")
+    end_time = (datetime.now() + timedelta(hours=24)).strftime("%Y-%m-%dT%H:00")
 
-    return {'weather': 'success'}
+    hourly_data = {}
+    # Store the hourly data into a dictionary
+    for i, time in enumerate(data["hourly"]["time"]):
+      if end_time >= time >= current_time:
+        hourly_data[time] = {}
+        hourly_data[time]["temperature_2m"] = data["hourly"]["temperature_2m"][i]
+        hourly_data[time]["apparent_temperature"] = data["hourly"]["apparent_temperature"][i]
+        hourly_data[time]["precipitation_probability"] = data["hourly"]["precipitation_probability"][i]
+        hourly_data[time]["precipitation"] = data["hourly"]["precipitation"][i]
+        hourly_data[time]["cloud_cover_low"] = data["hourly"]["cloud_cover_low"][i]
+        hourly_data[time]["cloud_cover_mid"] = data["hourly"]["cloud_cover_mid"][i]
+        hourly_data[time]["cloud_cover_high"] = data["hourly"]["cloud_cover_high"][i]
+        hourly_data[time]["wind_speed_10m"] = data["hourly"]["wind_speed_10m"][i]
+        hourly_data[time]["is_day"] = data["hourly"]["is_day"][i]
+        hourly_data[time]["sunshine_duration"] = data["hourly"]["sunshine_duration"][i]
+
+    daily_data = {}
+    # Get the daily weather forecast for the specifed location
+    for i, time in enumerate(data["daily"]["time"]):
+      daily_data[time] = {}
+      daily_data[time]['temperature_2m_max'] = data['daily']['temperature_2m_max'][i]
+      daily_data[time]['temperature_2m_min'] = data['daily']['temperature_2m_min'][i]
+      daily_data[time]['apparent_temperature_max'] = data['daily']['apparent_temperature_max'][i]
+      daily_data[time]['apparent_temperature_min'] = data['daily']['apparent_temperature_min'][i]
+      daily_data[time]['sunrise'] = data['daily']['sunrise'][i]
+      daily_data[time]['sunset'] = data['daily']['sunset'][i]
+      daily_data[time]['daylight_duration'] = data['daily']['daylight_duration'][i]
+      daily_data[time]['precipitation_probability_max'] = data['daily']['precipitation_probability_max'][i]
+    
+    return {'weather': 200, 'current': current_data, 'hourly': hourly_data, 'daily': daily_data}
   else:
     print("Location not found.")
 
