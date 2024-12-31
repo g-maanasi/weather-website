@@ -28,7 +28,7 @@ export const NavigationBar = () => {
               fontFamily: "'DM Sans', sans-serif",
             }}
           >
-            Clime
+            Climafy
           </Typography>
         </Box>
 
