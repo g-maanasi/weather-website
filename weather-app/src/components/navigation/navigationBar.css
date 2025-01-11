@@ -4,7 +4,9 @@
     height: 4rem;
     align-items: center;
     justify-content: center;
-    background-color: rgb(255, 255, 255)
+    background-color: #648FBF;
+    color: white;
+    border-bottom: solid white;
 }
 
 .header-navigation {

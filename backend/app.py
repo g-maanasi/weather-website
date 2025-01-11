@@ -8,21 +8,19 @@ import requests_cache
 import pandas as pd
 from retry_requests import retry
 from datetime import datetime, timedelta
-import firebase_admin
-from firebase_admin import credentials
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+CORS(app)
 
 cache_session = requests_cache.CachedSession('.cache', expire_after = 3600)
 retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
 openmeteo = openmeteo_requests.Client(session = retry_session)
+
 @app.route("/")
 def hello_world():
   return {"message":"hello world"}
 
 @app.route("/all_countries", methods=["GET"])
-@cross_origin(origin='http://localhost:3000')
 def get_all_countries_list():
   url = "https://countriesnow.space/api/v0.1/countries/iso"
   response = requests.request("GET", url, headers={}, data={})

@@ -34,12 +34,13 @@ export const NavigationBar = () => {
 
         <Box className="right-container">
           <Box className="search-bar">
-            <FormControl sx={{ m: 1, width: "24ch" }} variant="outlined">
+            <FormControl color='white' sx={{ m: 1, width: "24ch", fill: 'white', fontSize: 20,
+              fontFamily: "'DM Sans', sans-serif", }} variant="outlined">
               <OutlinedInput
                 id="outlined-adornment-weight"
                 startAdornment={
                   <InputAdornment position="start">
-                    <SearchIcon />
+                    <SearchIcon sx={{ fill: '#ffffff' }} />
                   </InputAdornment>
                 }
                 aria-describedby="outlined-weight-helper-text"
@@ -51,7 +52,7 @@ export const NavigationBar = () => {
             </FormControl>
           </Box>
           <Box className="log-in-container">
-            <Link href="login">Log In or Sign Up</Link>
+            
           </Box>
         </Box>
       </Box>

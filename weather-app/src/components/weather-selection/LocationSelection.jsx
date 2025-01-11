@@ -12,7 +12,7 @@ export const LocationSelection = () => {
   const [submitAvailable, setSubmitAvailable] = useState(false);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:5000/all_countries")
+    fetch("/all_countries")
       .then((res) => res.json())
       .then((result) => {
         setCountryList(result["countries"]);
@@ -25,7 +25,7 @@ export const LocationSelection = () => {
       setSelectedCountry(value);
       console.log("Option selected:", value);
 
-      fetch(`http://127.0.0.1:5000/all_country_regions/${value["label"]}`)
+      fetch(`/all_country_regions/${value["label"]}`)
         .then((res) => res.json())
         .then((result) => {
           if (!result || result["regions"].length === 0) {
@@ -40,7 +40,7 @@ export const LocationSelection = () => {
   };
 
   const getCitiesFromCountry = (country) => {
-    fetch(`http://127.0.0.1:5000/all_country_cities/${country}`)
+    fetch(`/all_country_cities/${country}`)
       .then((res) => res.json())
       .then((result) => {
         setSelectedCity("");
@@ -54,7 +54,7 @@ export const LocationSelection = () => {
       console.log("Option selected:", value);
       const selection = selectedCountry["label"] + "," + value["label"];
 
-      fetch(`http://127.0.0.1:5000/all_region_cities/${selection}`)
+      fetch(`/all_region_cities/${selection}`)
         .then((res) => res.json())
         .then((result) => {
           setSelectedCity("");
@@ -77,7 +77,7 @@ export const LocationSelection = () => {
       region: selectedRegion.label,
       country: selectedCountry.label,
     };
-    const url = "http://127.0.0.1:5000/get_weather";
+    const url = "/get_weather";
 
     try {
       const response = await fetch(url, {
