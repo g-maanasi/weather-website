@@ -1,6 +1,7 @@
 import "./weatherSelection.css";
 import { useEffect, useState } from "react";
 import { Autocomplete, Box, Button, TextField } from "@mui/material";
+import Cookies from 'js-cookie';
 
 export const LocationSelection = () => {
   const [countryList, setCountryList] = useState([{ label: "United States" }]);
@@ -72,11 +73,19 @@ export const LocationSelection = () => {
   };
 
   const getWeather = async () => {
-    const weatherInfo = {
+    let weatherInfo = {
       city: selectedCity.label,
-      region: selectedRegion.label,
       country: selectedCountry.label,
     };
+
+    if (selectedRegion) {
+      weatherInfo = {
+        city: selectedCity.label,
+        region: selectedRegion.label,
+        country: selectedCountry.label,
+      };
+    }
+    
     const url = "/get_weather";
 
     try {
@@ -90,7 +99,14 @@ export const LocationSelection = () => {
 
       if (response.ok) {
         const data = await response.json();
-        console.log(data);
+        const currentWeather = data['current']
+        const hourlyWeather = data['hourly']
+        const dailyWeather = data['daily'];
+      
+        // Save into cookies
+        Cookies.set('currentWeather', JSON.stringify(currentWeather), { expires: 1 })
+        Cookies.set('hourlyWeather', JSON.stringify(hourlyWeather), { expires: 1 })
+        Cookies.set('dailyWeather', JSON.stringify(dailyWeather), { expires: 1 })
       }
     } catch (error) {
       console.log(error);
