@@ -103,7 +103,10 @@ export const LocationSelection = () => {
         const hourlyWeather = data['hourly']
         const dailyWeather = data['daily'];
       
-        // Save into cookies
+        // Save weather and location data into cookies
+        Cookies.set('city', JSON.stringify(selectedCity), { expires: 1 })
+        Cookies.set('country', JSON.stringify(selectedCountry), { expires: 1 })
+
         Cookies.set('currentWeather', JSON.stringify(currentWeather), { expires: 1 })
         Cookies.set('hourlyWeather', JSON.stringify(hourlyWeather), { expires: 1 })
         Cookies.set('dailyWeather', JSON.stringify(dailyWeather), { expires: 1 })
