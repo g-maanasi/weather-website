@@ -8,7 +8,6 @@ import {
 } from "@mui/material";
 import ThermostatIcon from "@mui/icons-material/Thermostat";
 import SearchIcon from "@mui/icons-material/Search";
-import { Link } from "react-router-dom";
 
 export const NavigationBar = () => {
   return (
@@ -34,13 +33,13 @@ export const NavigationBar = () => {
 
         <Box className="right-container">
           <Box className="search-bar">
-            <FormControl color='white' sx={{ m: 1, width: "24ch", fill: 'white', fontSize: 20,
+            <FormControl color='white' sx={{ m: 1, width: "20ch", fill: 'white', fontSize: 20,
               fontFamily: "'DM Sans', sans-serif", }} variant="outlined">
               <OutlinedInput
                 id="outlined-adornment-weight"
                 startAdornment={
                   <InputAdornment position="start">
-                    <SearchIcon sx={{ fill: '#ffffff' }} />
+                    <SearchIcon />
                   </InputAdornment>
                 }
                 aria-describedby="outlined-weight-helper-text"

@@ -7,11 +7,20 @@
     flex-direction: column;
     border-radius: 20px;
     height: 25rem;
-    width: 30rem;
+    border-color: #02387f;
 }
 
 .search-button {
     position: absolute;
     margin-top: 1rem;
     margin-left: auto;
+}
+
+
+.sliding-div {
+    position: relative;
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
 }

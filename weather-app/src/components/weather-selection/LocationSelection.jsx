@@ -1,7 +1,8 @@
 import "./weatherSelection.css";
 import { useEffect, useState } from "react";
 import { Autocomplete, Box, Button, TextField } from "@mui/material";
-import Cookies from 'js-cookie';
+import Cookies from "js-cookie";
+import { Slide } from "react-awesome-reveal";
 
 export const LocationSelection = () => {
   const [countryList, setCountryList] = useState([{ label: "United States" }]);
@@ -85,7 +86,7 @@ export const LocationSelection = () => {
         country: selectedCountry.label,
       };
     }
-    
+
     const url = "/get_weather";
 
     try {
@@ -99,17 +100,23 @@ export const LocationSelection = () => {
 
       if (response.ok) {
         const data = await response.json();
-        const currentWeather = data['current']
-        const hourlyWeather = data['hourly']
-        const dailyWeather = data['daily'];
-      
-        // Save weather and location data into cookies
-        Cookies.set('city', JSON.stringify(selectedCity), { expires: 1 })
-        Cookies.set('country', JSON.stringify(selectedCountry), { expires: 1 })
+        const currentWeather = data["current"];
+        const hourlyWeather = data["hourly"];
+        const dailyWeather = data["daily"];
 
-        Cookies.set('currentWeather', JSON.stringify(currentWeather), { expires: 1 })
-        Cookies.set('hourlyWeather', JSON.stringify(hourlyWeather), { expires: 1 })
-        Cookies.set('dailyWeather', JSON.stringify(dailyWeather), { expires: 1 })
+        // Save weather and location data into cookies
+        Cookies.set("city", JSON.stringify(selectedCity), { expires: 1 });
+        Cookies.set("country", JSON.stringify(selectedCountry), { expires: 1 });
+
+        Cookies.set("currentWeather", JSON.stringify(currentWeather), {
+          expires: 1,
+        });
+        Cookies.set("hourlyWeather", JSON.stringify(hourlyWeather), {
+          expires: 1,
+        });
+        Cookies.set("dailyWeather", JSON.stringify(dailyWeather), {
+          expires: 1,
+        });
       }
     } catch (error) {
       console.log(error);
@@ -118,43 +125,48 @@ export const LocationSelection = () => {
 
   return (
     <Box className="selection-container">
-      <Autocomplete
-        disablePortal
-        options={countryList}
-        sx={{ width: 300 }}
-        onChange={onCountrySelect}
-        value={selectedCountry}
-        renderInput={(params) => <TextField {...params} label="Country" />}
-      />
-
-      {selectedCountry !== "" && selectedRegion !== null && (
+      <Slide direction="up" cascade className="sliding-div">
         <Autocomplete
+          className="select-input"
           disablePortal
-          options={regionList}
-          sx={{ width: 300, mt: 5 }}
-          onChange={onRegionSelect}
-          value={selectedRegion}
-          renderInput={(params) => <TextField {...params} label="Region" />}
+          options={countryList}
+          sx={{ width: "50%" }}
+          onChange={onCountrySelect}
+          value={selectedCountry}
+          renderInput={(params) => <TextField {...params} label="Country" />}
         />
-      )}
 
-      {(selectedRegion !== "" ||
-        (selectedRegion === null && selectedCountry !== "")) && (
-        <Autocomplete
-          disablePortal
-          options={cityList}
-          sx={{ width: 300, mt: 5 }}
-          onChange={onCitySelect}
-          value={selectedCity}
-          renderInput={(params) => <TextField {...params} label="City" />}
-        />
-      )}
+        {selectedCountry !== "" && selectedRegion !== null && (
+          <Autocomplete
+            className="select-input"
+            disablePortal
+            options={regionList}
+            sx={{ width: "50%", mt: 5 }}
+            onChange={onRegionSelect}
+            value={selectedRegion}
+            renderInput={(params) => <TextField {...params} label="Region" />}
+          />
+        )}
 
-      {submitAvailable && (
-        <Button className="search-button" onClick={getWeather}>
-          Search
-        </Button>
-      )}
+        {(selectedRegion !== "" ||
+          (selectedRegion === null && selectedCountry !== "")) && (
+          <Autocomplete
+            className="select-input"
+            disablePortal
+            options={cityList}
+            sx={{ width: "50%", mt: 5 }}
+            onChange={onCitySelect}
+            value={selectedCity}
+            renderInput={(params) => <TextField {...params} label="City" />}
+          />
+        )}
+
+        {submitAvailable && (
+          <Button className="search-button" onClick={getWeather}>
+            Search
+          </Button>
+        )}
+      </Slide>
     </Box>
   );
 };

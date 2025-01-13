@@ -1,8 +1,8 @@
 import "./App.css";
 import React, { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Home } from "./pages/home-page/HomePage";
 
-const Home = lazy(() => import("./pages/home-page/HomePage"));
 const Login = lazy(() => import("./pages/login/LoginPage"));
 const Forecast = lazy(() => import("./pages/forecast-page/ForecastPage"));
 
