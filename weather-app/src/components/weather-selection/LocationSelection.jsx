@@ -2,7 +2,6 @@ import "./weatherSelection.css";
 import { useEffect, useState } from "react";
 import { Autocomplete, Box, Button, TextField } from "@mui/material";
 import Cookies from "js-cookie";
-import { Slide } from "react-awesome-reveal";
 
 export const LocationSelection = () => {
   const [countryList, setCountryList] = useState([{ label: "United States" }]);
@@ -125,48 +124,46 @@ export const LocationSelection = () => {
 
   return (
     <Box className="selection-container">
-      <Slide direction="up" cascade className="sliding-div">
+      <Autocomplete
+        className="select-input"
+        disablePortal
+        options={countryList}
+        sx={{ width: "50%" }}
+        onChange={onCountrySelect}
+        value={selectedCountry}
+        renderInput={(params) => <TextField {...params} label="Country" />}
+      />
+
+      {selectedCountry !== "" && selectedRegion !== null && (
         <Autocomplete
           className="select-input"
           disablePortal
-          options={countryList}
-          sx={{ width: "50%" }}
-          onChange={onCountrySelect}
-          value={selectedCountry}
-          renderInput={(params) => <TextField {...params} label="Country" />}
+          options={regionList}
+          sx={{ width: "50%", mt: 5, color: 'black' }}
+          onChange={onRegionSelect}
+          value={selectedRegion}
+          renderInput={(params) => <TextField {...params} label="Region" />}
         />
+      )}
 
-        {selectedCountry !== "" && selectedRegion !== null && (
-          <Autocomplete
-            className="select-input"
-            disablePortal
-            options={regionList}
-            sx={{ width: "50%", mt: 5 }}
-            onChange={onRegionSelect}
-            value={selectedRegion}
-            renderInput={(params) => <TextField {...params} label="Region" />}
-          />
-        )}
+      {(selectedRegion !== "" ||
+        (selectedRegion === null && selectedCountry !== "")) && (
+        <Autocomplete
+          className="select-input"
+          disablePortal
+          options={cityList}
+          sx={{ width: "50%", mt: 5 }}
+          onChange={onCitySelect}
+          value={selectedCity}
+          renderInput={(params) => <TextField {...params} label="City" />}
+        />
+      )}
 
-        {(selectedRegion !== "" ||
-          (selectedRegion === null && selectedCountry !== "")) && (
-          <Autocomplete
-            className="select-input"
-            disablePortal
-            options={cityList}
-            sx={{ width: "50%", mt: 5 }}
-            onChange={onCitySelect}
-            value={selectedCity}
-            renderInput={(params) => <TextField {...params} label="City" />}
-          />
-        )}
-
-        {submitAvailable && (
-          <Button className="search-button" onClick={getWeather}>
-            Search
-          </Button>
-        )}
-      </Slide>
+      {submitAvailable && (
+        <Button className="search-button" onClick={getWeather}>
+          Search
+        </Button>
+      )}
     </Box>
   );
 };

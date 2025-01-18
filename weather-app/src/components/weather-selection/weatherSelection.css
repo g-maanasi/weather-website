@@ -1,5 +1,5 @@
 .selection-container {
-    background-color: white;
+    background-color: rgb(241, 241, 241);
     display: flex;
     position: relative;
     align-items: center;
@@ -7,7 +7,9 @@
     flex-direction: column;
     border-radius: 20px;
     height: 25rem;
-    border-color: #02387f;
+    width: 25rem;
+    margin-top: 1rem;
+    border: 1px solid #618aba;
 }
 
 .search-button {
